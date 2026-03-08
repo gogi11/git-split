@@ -7,6 +7,7 @@ import (
 	"git-split/internal/git"
 	"git-split/internal/mr"
 	"git-split/internal/plan"
+	"git-split/internal/planner"
 	"git-split/internal/provider"
 
 	"github.com/spf13/cobra"
@@ -20,6 +21,7 @@ var (
 	push     bool
 	createMR bool
 	dryRun   bool
+	mode     string
 )
 
 var splitCmd = &cobra.Command{
@@ -31,13 +33,8 @@ var splitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		fmt.Printf("Found %d commits\n", len(commits))
-
-		chunks := git.ChunkCommits(commits, size)
-
 		currentBase := base
-
 		remote, err := git.GetRemoteURL()
 		if err != nil {
 			log.Fatal(err)
@@ -47,17 +44,36 @@ var splitCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		planning := plan.BuildPlan(
-			remote,
-			string(repoInfo.Provider),
-			repoInfo.Owner+"/"+repoInfo.Name,
-			base,
-			target,
-			prefix,
-			chunks,
-			push,
-			createMR,
-		)
+		var plannerImpl planner.Planner
+		if mode == "directory" {
+			plannerImpl = planner.DirectoryPlanner{
+				Base:     base,
+				Target:   target,
+				Prefix:   prefix,
+				Remote:   remote,
+				Provider: string(repoInfo.Provider),
+				Repo:     repoInfo.Owner + "/" + repoInfo.Name,
+				Push:     push,
+				CreateMR: createMR,
+			}
+		} else {
+			plannerImpl = planner.CommitPlanner{
+				Base:     base,
+				Target:   target,
+				Size:     size,
+				Prefix:   prefix,
+				Remote:   remote,
+				Provider: string(repoInfo.Provider),
+				Repo:     repoInfo.Owner + "/" + repoInfo.Name,
+				Push:     push,
+				CreateMR: createMR,
+			}
+		}
+
+		planning, err := plannerImpl.Build()
+		if err != nil {
+			log.Fatal(err)
+		}
 		plan.PrintPreview(planning)
 		if dryRun {
 			fmt.Println("Dry-run mode enabled. No changes were made.")
@@ -106,7 +122,8 @@ func init() {
 	splitCmd.Flags().StringVar(&prefix, "prefix", "split", "Branch prefix")
 	splitCmd.Flags().BoolVar(&push, "push", false, "Push branches")
 	splitCmd.Flags().BoolVar(&createMR, "create-mr", false, "Create merge requests")
-	splitCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Simulate actions")
+	splitCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Simulate actions (without actually pushing)")
+	splitCmd.Flags().StringVar(&mode, "mode", "commit", "Spliting mode: commit | directory")
 
 	rootCmd.AddCommand(splitCmd)
 }
