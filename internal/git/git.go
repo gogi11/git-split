@@ -3,7 +3,7 @@ package git
 import (
 	"bytes"
 	"fmt"
-	"git-split/internal/helpers"
+	"git-split/helpers"
 	"os/exec"
 	"strings"
 )
@@ -97,7 +97,6 @@ func GetRemotes() ([]string, error) {
 }
 
 func GetChangedFiles(base, target string) ([]string, error) {
-
 	out, err := runGit(
 		"diff",
 		"--name-only",
@@ -133,4 +132,13 @@ func GetCommitsForFiles(base, target string, files []string) ([]string, error) {
 
 	lines := strings.Split(out, "\n")
 	return helpers.Unique(lines), nil
+}
+
+func Commit(message string) error {
+	_, err := runGit("add", ".")
+	if err != nil {
+		return err
+	}
+	_, err = runGit("commit", "-m", message)
+	return err
 }

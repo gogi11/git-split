@@ -1,9 +1,23 @@
 package plan
 
+type OperationType string
+
+const (
+	OpCherryPick OperationType = "cherry-pick"
+	OpApplyPath  OperationType = "apply-path"
+)
+
+type Operation struct {
+	Type    OperationType
+	Commits []string
+	Paths   []string
+	FromRef string
+}
+
 type BranchPlan struct {
 	Branch        string
 	Base          string
-	Commits       []string
+	Operations    []Operation
 	Push          bool
 	CreateMR      bool
 	MRTitle       string

@@ -11,9 +11,7 @@ type DirectoryPlanner struct {
 	Base     string
 	Target   string
 	Prefix   string
-	Remote   string
-	Provider string
-	Repo     string
+	Depth    int
 	Push     bool
 	CreateMR bool
 }
@@ -24,37 +22,26 @@ func (p DirectoryPlanner) Build() (plan.Plan, error) {
 	if err != nil {
 		return plan.Plan{}, err
 	}
-
-	groups := git.GroupFilesByDirectory(files)
-
-	var chunks [][]string
-
-	for dir, files := range groups {
-
-		fmt.Println("Directory:", dir)
-
-		commits, err := git.GetCommitsForFiles(
-			p.Base,
-			p.Target,
-			files,
-		)
-
-		if err != nil {
-			return plan.Plan{}, err
+	dirs := git.GroupFilesByDepth(files, p.Depth)
+	var branches []plan.BranchPlan
+	currentBase := p.Base
+	var accumulated []string
+	for i, dir := range dirs {
+		accumulated = append(accumulated, dir)
+		branch := fmt.Sprintf("%s-split-%d", p.Target, i+1)
+		op := plan.Operation{
+			Type:    plan.OpApplyPath,
+			Paths:   []string{dir},
+			FromRef: p.Target,
 		}
-
-		chunks = append(chunks, commits)
+		branches = append(branches, plan.BranchPlan{
+			Branch:     branch,
+			Base:       currentBase,
+			Operations: []plan.Operation{op},
+			Push:       p.Push,
+			CreateMR:   p.CreateMR,
+		})
+		currentBase = branch
 	}
-
-	return plan.BuildPlan(
-		p.Remote,
-		p.Provider,
-		p.Repo,
-		p.Base,
-		p.Target,
-		p.Prefix,
-		chunks,
-		p.Push,
-		p.CreateMR,
-	), nil
+	return plan.Plan{Branches: branches}, nil
 }
