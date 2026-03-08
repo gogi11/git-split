@@ -2,7 +2,9 @@ package planner
 
 import (
 	"fmt"
+	"strings"
 
+	"git-split/helpers"
 	"git-split/internal/git"
 	"git-split/internal/plan"
 )
@@ -22,24 +24,24 @@ func (p DirectoryPlanner) Build() (plan.Plan, error) {
 	if err != nil {
 		return plan.Plan{}, err
 	}
-	dirs := git.GroupFilesByDepth(files, p.Depth)
+	sortedDirs := helpers.SortMap(git.GroupFilesByDepthMap(files, p.Depth))
 	var branches []plan.BranchPlan
 	currentBase := p.Base
-	var accumulated []string
-	for i, dir := range dirs {
-		accumulated = append(accumulated, dir)
+	for i, filesPerDir := range sortedDirs {
 		branch := fmt.Sprintf("%s-split-%d", p.Target, i+1)
 		op := plan.Operation{
 			Type:    plan.OpApplyPath,
-			Paths:   []string{dir},
+			Paths:   filesPerDir.Value,
 			FromRef: p.Target,
 		}
 		branches = append(branches, plan.BranchPlan{
-			Branch:     branch,
-			Base:       currentBase,
-			Operations: []plan.Operation{op},
-			Push:       p.Push,
-			CreateMR:   p.CreateMR,
+			Branch:        branch,
+			Base:          currentBase,
+			Operations:    []plan.Operation{op},
+			Push:          p.Push,
+			CreateMR:      p.CreateMR,
+			MRTitle:       fmt.Sprintf("%s: Split %d", p.Target, i+1),
+			MRDescription: fmt.Sprintf("This MR splits the changes in `%s` into a separate branch. Summary of files changed in this MR: \n - %s", filesPerDir.Key, strings.Join(filesPerDir.Value, "\n - ")),
 		})
 		currentBase = branch
 	}

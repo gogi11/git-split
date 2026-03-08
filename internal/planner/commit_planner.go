@@ -2,6 +2,7 @@ package planner
 
 import (
 	"fmt"
+	"strings"
 
 	"git-split/internal/git"
 	"git-split/internal/plan"
@@ -31,11 +32,13 @@ func (p CommitPlanner) Build() (plan.Plan, error) {
 			Commits: chunk,
 		}
 		branches = append(branches, plan.BranchPlan{
-			Branch:     branch,
-			Base:       currentBase,
-			Operations: []plan.Operation{op},
-			Push:       p.Push,
-			CreateMR:   p.CreateMR,
+			Branch:        branch,
+			Base:          currentBase,
+			Operations:    []plan.Operation{op},
+			Push:          p.Push,
+			CreateMR:      p.CreateMR,
+			MRTitle:       fmt.Sprintf("%s: Split %d", p.Target, i+1),
+			MRDescription: fmt.Sprintf("This MR splits the commits in `%s` into a separate branch. Hashes of commits in this MR: \n - %s", p.Target, strings.Join(chunk, "\n - ")),
 		})
 		currentBase = branch
 	}
