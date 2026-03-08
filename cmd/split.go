@@ -10,10 +10,12 @@ import (
 )
 
 var (
-	base   string
-	target string
-	size   int
-	prefix string
+	base    string
+	target  string
+	size    int
+	prefix  string
+	postfix string
+	number  bool
 )
 
 var splitCmd = &cobra.Command{
@@ -37,8 +39,16 @@ var splitCmd = &cobra.Command{
 		currentBase := base
 
 		for i, chunk := range chunks {
-
-			branchName := fmt.Sprintf("%s-%d", prefix, i+1)
+			branchName := target
+			if prefix != "" {
+				branchName = fmt.Sprintf("%s-%s", prefix, branchName)
+			}
+			if postfix != "" {
+				branchName = fmt.Sprintf("%s-%s", branchName, postfix)
+			}
+			if number {
+				branchName = fmt.Sprintf("%s-%d", branchName, i+1)
+			}
 
 			fmt.Printf("\nCreating branch %s\n", branchName)
 
@@ -60,11 +70,12 @@ var splitCmd = &cobra.Command{
 }
 
 func init() {
-
 	splitCmd.Flags().StringVar(&base, "base", "", "Base branch")
 	splitCmd.Flags().StringVar(&target, "target", "", "Target branch")
-	splitCmd.Flags().IntVar(&size, "size", 5, "Number of commits per branch")
-	splitCmd.Flags().StringVar(&prefix, "prefix", "split", "Branch name prefix")
+	splitCmd.Flags().IntVar(&size, "size", 1, "Number of commits per branch")
+	splitCmd.Flags().StringVar(&prefix, "prefix", "", "Branch name prefix")
+	splitCmd.Flags().StringVar(&postfix, "postfix", "split", "Branch name postfix")
+	splitCmd.Flags().BoolVar(&number, "number", true, "Whether to number branches")
 
 	rootCmd.AddCommand(splitCmd)
 }
