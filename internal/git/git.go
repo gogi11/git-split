@@ -3,6 +3,7 @@ package git
 import (
 	"bytes"
 	"fmt"
+	"git-split/helpers"
 	"os/exec"
 	"strings"
 )
@@ -93,4 +94,56 @@ func GetRemotes() ([]string, error) {
 	}
 
 	return strings.Split(strings.TrimSpace(out), "\n"), nil
+}
+
+func GetChangedFiles(base, target string) ([]string, error) {
+	out, err := runGit(
+		"diff",
+		"--name-only",
+		base+".."+target,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if out == "" {
+		return []string{}, nil
+	}
+
+	return strings.Split(out, "\n"), nil
+}
+func GetCommitsForFiles(base, target string, files []string) ([]string, error) {
+	args := []string{
+		"log",
+		"--pretty=format:%H",
+		base + ".." + target,
+	}
+	args = append(args, "--")
+	args = append(args, files...)
+	out, err := runGit(args...)
+	if err != nil {
+		return nil, err
+	}
+
+	if out == "" {
+		return []string{}, nil
+	}
+
+	lines := strings.Split(out, "\n")
+	return helpers.Unique(lines), nil
+}
+
+func Commit(message string) error {
+	_, err := runGit("add", ".")
+	if err != nil {
+		return err
+	}
+	_, err = runGit("commit", "-m", message)
+	return err
+}
+
+func Checkout(branch string) error {
+	_, err := runGit("checkout", branch)
+	return err
 }
