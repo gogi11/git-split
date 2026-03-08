@@ -142,3 +142,8 @@ func Commit(message string) error {
 	_, err = runGit("commit", "-m", message)
 	return err
 }
+
+func Checkout(branch string) error {
+	_, err := runGit("checkout", branch)
+	return err
+}

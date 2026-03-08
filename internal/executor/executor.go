@@ -21,6 +21,10 @@ func Execute(p plan.Plan) error {
 	}
 
 	for _, branch := range p.Branches {
+		err = git.Checkout(branch.Base)
+		if err != nil {
+			return err
+		}
 		err := git.CreateBranch(branch.Base, branch.Branch)
 		if err != nil {
 			return err
