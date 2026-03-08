@@ -28,9 +28,9 @@ func runGit(args ...string) (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func GetCommitsBetween(base, target string) ([]string, error) {
+func GetCommitsBetween(base_branch, target_branch string) ([]string, error) {
 
-	out, err := runGit("rev-list", "--reverse", fmt.Sprintf("%s..%s", base, target))
+	out, err := runGit("rev-list", "--reverse", fmt.Sprintf("%s..%s", base_branch, target_branch))
 	if err != nil {
 		return nil, err
 	}

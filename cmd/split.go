@@ -70,7 +70,7 @@ var splitCmd = &cobra.Command{
 }
 
 func init() {
-	splitCmd.Flags().StringVar(&base, "base", "", "Base branch")
+	splitCmd.Flags().StringVar(&base, "base", "main", "Base branch")
 	splitCmd.Flags().StringVar(&target, "target", "", "Target branch")
 	splitCmd.Flags().IntVar(&size, "size", 1, "Number of commits per branch")
 	splitCmd.Flags().StringVar(&prefix, "prefix", "", "Branch name prefix")
