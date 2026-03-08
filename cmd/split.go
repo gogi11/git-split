@@ -63,14 +63,14 @@ var splitCmd = &cobra.Command{
 			fmt.Println("Dry-run mode enabled. No changes were made.")
 			return
 		}
-		for i, chunk := range chunks {
+		for i, branchPlan := range planning.Branches {
 
 			branch := fmt.Sprintf("%s-%d", prefix, i+1)
 			err := git.CreateBranch(currentBase, branch)
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = git.CherryPickCommits(chunk)
+			err = git.CherryPickCommits(branchPlan.Commits)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -81,10 +81,10 @@ var splitCmd = &cobra.Command{
 				}
 			}
 			if createMR {
-				title := fmt.Sprintf("%s part %d", target, i+1)
 				err := mr.Create(
 					repoInfo,
-					title,
+					branchPlan.MRTitle,
+					branchPlan.MRDescription,
 					currentBase,
 					branch,
 				)

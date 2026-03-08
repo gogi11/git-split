@@ -2,6 +2,7 @@ package plan
 
 import (
 	"fmt"
+	"git-split/internal/mr"
 )
 
 func BuildPlan(
@@ -15,27 +16,29 @@ func BuildPlan(
 	push bool,
 	createMR bool,
 ) Plan {
-
 	var branches []BranchPlan
-
 	currentBase := base
-
+	total := len(chunks)
 	for i, chunk := range chunks {
-
-		branch := fmt.Sprintf("%s-%d", prefix, i+1)
-
+		index := i + 1
+		branch := fmt.Sprintf("%s-%d", prefix, index)
+		description := mr.GenerateDescription(
+			index,
+			total,
+			currentBase,
+			branch,
+			chunk,
+		)
 		branches = append(branches, BranchPlan{
-			Branch:   branch,
-			Base:     currentBase,
-			Commits:  chunk,
-			Push:     push,
-			CreateMR: createMR,
-			MRTitle:  fmt.Sprintf("%s part %d", target, i+1),
+			Branch:        branch,
+			Base:          currentBase,
+			Commits:       chunk,
+			Push:          push,
+			CreateMR:      createMR,
+			MRTitle:       fmt.Sprintf("[%d/%d] %s", index, total, target),
+			MRDescription: description,
 		})
-
-		currentBase = branch
 	}
-
 	return Plan{
 		Remote:   remote,
 		Provider: provider,
