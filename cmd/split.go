@@ -6,6 +6,7 @@ import (
 
 	"git-split/internal/git"
 	"git-split/internal/mr"
+	"git-split/internal/plan"
 	"git-split/internal/provider"
 
 	"github.com/spf13/cobra"
@@ -19,7 +20,6 @@ var (
 	push     bool
 	createMR bool
 	dryRun   bool
-	remote   string
 )
 
 var splitCmd = &cobra.Command{
@@ -38,64 +38,61 @@ var splitCmd = &cobra.Command{
 
 		currentBase := base
 
+		remote, err := git.GetRemoteURL()
+		if err != nil {
+			log.Fatal(err)
+		}
 		repoInfo, err := provider.ParseRemote(remote)
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		planning := plan.BuildPlan(
+			remote,
+			string(repoInfo.Provider),
+			repoInfo.Owner+"/"+repoInfo.Name,
+			base,
+			target,
+			prefix,
+			chunks,
+			push,
+			createMR,
+		)
+		plan.PrintPreview(planning)
+		if dryRun {
+			fmt.Println("Dry-run mode enabled. No changes were made.")
+			return
+		}
 		for i, chunk := range chunks {
 
 			branch := fmt.Sprintf("%s-%d", prefix, i+1)
-
-			if dryRun {
-				fmt.Printf("[DRY] create branch %s from %s\n", branch, currentBase)
-				fmt.Printf("[DRY] cherry-pick %v\n", chunk)
-			} else {
-
-				err := git.CreateBranch(currentBase, branch)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				err = git.CherryPickCommits(chunk)
-				if err != nil {
-					log.Fatal(err)
-				}
+			err := git.CreateBranch(currentBase, branch)
+			if err != nil {
+				log.Fatal(err)
 			}
-
+			err = git.CherryPickCommits(chunk)
+			if err != nil {
+				log.Fatal(err)
+			}
 			if push {
-
-				if dryRun {
-					fmt.Printf("[DRY] push %s\n", branch)
-				} else {
-					err := git.Push(remote, branch)
-					if err != nil {
-						log.Fatal(err)
-					}
+				err := git.Push(remote, branch)
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
-
 			if createMR {
-
 				title := fmt.Sprintf("%s part %d", target, i+1)
+				err := mr.Create(
+					repoInfo,
+					title,
+					currentBase,
+					branch,
+				)
 
-				if dryRun {
-					fmt.Printf("[DRY] create MR %s -> %s\n", currentBase, branch)
-				} else {
-
-					err := mr.Create(
-						repoInfo,
-						title,
-						currentBase,
-						branch,
-					)
-
-					if err != nil {
-						log.Fatal(err)
-					}
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
-
 			currentBase = branch
 		}
 	},
@@ -103,14 +100,13 @@ var splitCmd = &cobra.Command{
 
 func init() {
 
-	splitCmd.Flags().StringVar(&base, "base", "", "Base branch")
+	splitCmd.Flags().StringVar(&base, "base", "main", "Base branch")
 	splitCmd.Flags().StringVar(&target, "target", "", "Target branch")
 	splitCmd.Flags().IntVar(&size, "size", 5, "Commits per branch")
 	splitCmd.Flags().StringVar(&prefix, "prefix", "split", "Branch prefix")
 	splitCmd.Flags().BoolVar(&push, "push", false, "Push branches")
 	splitCmd.Flags().BoolVar(&createMR, "create-mr", false, "Create merge requests")
 	splitCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Simulate actions")
-	splitCmd.Flags().StringVar(&remote, "remote", "origin", "Git remote")
 
 	rootCmd.AddCommand(splitCmd)
 }
