@@ -1,3 +1,10 @@
+If you wish to use it with your own repo, set the API key as an environment variable:
+```bash
+set GITHUB_TOKEN=your_github_token
+set GITLAB_TOKEN=your_gitlab_token
+set BITBUCKET_TOKEN=your_bitbucket_token
+```
+
 ## Commands to build:
 ```bash
 set GOOS=windows 
@@ -9,4 +16,6 @@ go build -o output/git-split.exe
 ```bash
 output/git-split.exe split
   --target name-of-target-branch \
+  --mode directory \
+  --dry-run
 ```
