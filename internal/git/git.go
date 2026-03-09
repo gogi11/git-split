@@ -102,13 +102,10 @@ func GetRemotes() ([]string, error) {
 }
 
 func GetChangedFiles(base, target string) ([]string, error) {
+	// DEPRECATED, WE USE GetChangedFilesWithStatus INSTEAD
 	out, err := runGit(
 		"diff",
-<<<<<<< HEAD
-		"--name-status",
-=======
 		"--name-only",
->>>>>>> main
 		base+".."+target,
 	)
 
@@ -154,5 +151,15 @@ func Commit(message string) error {
 
 func Checkout(branch string) error {
 	_, err := runGit("checkout", branch)
+	return err
+}
+
+func ApplyPathFromBranch(targetBranch, path string) error {
+	_, err := runGit(
+		"checkout",
+		targetBranch,
+		"--",
+		path,
+	)
 	return err
 }
