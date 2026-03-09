@@ -1,5 +1,7 @@
 package plan
 
+import "git-split/internal/git"
+
 type OperationType string
 
 const (
@@ -8,10 +10,10 @@ const (
 )
 
 type Operation struct {
-	Type    OperationType
-	Commits []string
-	Paths   []string
-	FromRef string
+	Type        OperationType
+	Commits     []string
+	FileChanges []git.FileChange
+	FromRef     string
 }
 
 type BranchPlan struct {

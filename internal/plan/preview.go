@@ -23,8 +23,8 @@ func PrintPreview(p Plan) {
 				}
 			case OpApplyPath:
 				fmt.Printf("    Apply Paths from %s:\n", op.FromRef)
-				for _, path := range op.Paths {
-					fmt.Printf("      - %s\n", path)
+				for _, fileChange := range op.FileChanges {
+					fmt.Printf("      - %s %s\n", fileChange.Action, fileChange.Path)
 				}
 			}
 		}

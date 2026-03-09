@@ -46,18 +46,17 @@ func Execute(p plan.Plan) error {
 					return err
 				}
 			case plan.OpApplyPath:
-				for _, path := range op.Paths {
-					err := git.ApplyPathFromBranch(
-						op.FromRef,
-						path,
-					)
-					if err != nil {
-						log.Fatal(err)
-						return err
+				for _, fc := range op.FileChanges {
+					switch fc.Action {
+					case git.MODIFIED, git.ADDED:
+						git.ApplyPathFromBranch(op.FromRef, fc.Path) // checkout/update file
+					case git.DELETED:
+						git.Run("rm", fc.Path) // remove file
+					case git.RENAMED:
+						git.Run("mv", fc.OldPath, fc.Path) // optional: rename
 					}
 				}
-				fmt.Printf("Applied these files: %s\n", op.Paths)
-				msg := fmt.Sprintf("Apply paths from %s", op.FromRef)
+				msg := fmt.Sprintf(branch.MRTitle)
 				err := git.Commit(msg)
 				if err != nil {
 					log.Fatal(err)

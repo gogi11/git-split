@@ -2,7 +2,6 @@ package planner
 
 import (
 	"fmt"
-	"strings"
 
 	"git-split/helpers"
 	"git-split/internal/git"
@@ -20,28 +19,36 @@ type DirectoryPlanner struct {
 
 func (p DirectoryPlanner) Build() (plan.Plan, error) {
 
-	files, err := git.GetChangedFiles(p.Base, p.Target)
+	files, err := git.GetChangedFilesWithStatus(p.Base, p.Target)
 	if err != nil {
 		return plan.Plan{}, err
 	}
-	sortedDirs := helpers.SortMap(git.GroupFilesByDepthMap(files, p.Depth))
+	sortedDirs := helpers.SortMap[git.FileChange](git.GroupFilesByDepthMap(files, p.Depth))
 	var branches []plan.BranchPlan
 	currentBase := p.Base
 	for i, filesPerDir := range sortedDirs {
 		branch := fmt.Sprintf("%s-split-%d", p.Target, i+1)
 		op := plan.Operation{
-			Type:    plan.OpApplyPath,
-			Paths:   filesPerDir.Value,
-			FromRef: p.Target,
+			Type:        plan.OpApplyPath,
+			FileChanges: filesPerDir.Value,
+			FromRef:     p.Target,
 		}
+
+		title := fmt.Sprintf("%s: Split %d", p.Target, i+1)
+
+		description := fmt.Sprintf("This MR splits the changes in `%s` into a separate branch. Summary of files changed in this MR:", filesPerDir.Key)
+		for _, f := range filesPerDir.Value {
+			description += fmt.Sprintf("\n - %s %s", f.Action, f.Path)
+		}
+
 		branches = append(branches, plan.BranchPlan{
 			Branch:        branch,
 			Base:          currentBase,
 			Operations:    []plan.Operation{op},
 			Push:          p.Push,
 			CreateMR:      p.CreateMR,
-			MRTitle:       fmt.Sprintf("%s: Split %d", p.Target, i+1),
-			MRDescription: fmt.Sprintf("This MR splits the changes in `%s` into a separate branch. Summary of files changed in this MR: \n - %s", filesPerDir.Key, strings.Join(filesPerDir.Value, "\n - ")),
+			MRTitle:       title,
+			MRDescription: description,
 		})
 		currentBase = branch
 	}

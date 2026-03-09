@@ -2,15 +2,15 @@ package helpers
 
 import "sort"
 
-type MapGroup struct {
+type MapGroup[T any] struct {
 	Key   string
-	Value []string
+	Value []T
 }
 
-func SortMap(m map[string][]string) []MapGroup {
-	var groups []MapGroup
+func SortMap[T any](m map[string][]T) []MapGroup[T] {
+	var groups []MapGroup[T]
 	for key, value := range m {
-		groups = append(groups, MapGroup{
+		groups = append(groups, MapGroup[T]{
 			Key:   key,
 			Value: value,
 		})
