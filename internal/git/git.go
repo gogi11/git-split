@@ -104,7 +104,11 @@ func GetRemotes() ([]string, error) {
 func GetChangedFiles(base, target string) ([]string, error) {
 	out, err := runGit(
 		"diff",
+<<<<<<< HEAD
 		"--name-status",
+=======
+		"--name-only",
+>>>>>>> main
 		base+".."+target,
 	)
 
