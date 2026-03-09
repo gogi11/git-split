@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+func Run(args ...string) error {
+	_, err := runGit(args...)
+	return err
+}
+
 func runGit(args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	var out bytes.Buffer
@@ -99,7 +104,11 @@ func GetRemotes() ([]string, error) {
 func GetChangedFiles(base, target string) ([]string, error) {
 	out, err := runGit(
 		"diff",
+<<<<<<< HEAD
+		"--name-status",
+=======
 		"--name-only",
+>>>>>>> main
 		base+".."+target,
 	)
 
