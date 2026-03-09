@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func CreateGitBucketPR(repo Repo, title, base, head string) error {
+func CreateGitBucketPR(repo Repo, title, description, base, head string) error {
 
 	token := os.Getenv("GITBUCKET_TOKEN")
 	if token == "" {
@@ -23,9 +23,10 @@ func CreateGitBucketPR(repo Repo, title, base, head string) error {
 	)
 
 	body := map[string]string{
-		"title": title,
-		"head":  head,
-		"base":  base,
+		"title":       title,
+		"head":        head,
+		"base":        base,
+		"description": description,
 	}
 
 	data, err := json.Marshal(body)
