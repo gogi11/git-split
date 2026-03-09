@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func CreateGitHubPR(repo Repo, title, base, head string) error {
+func CreateGitHubPR(repo Repo, title, description, base, head string) error {
 
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
@@ -19,6 +19,7 @@ func CreateGitHubPR(repo Repo, title, base, head string) error {
 		"title": title,
 		"head":  head,
 		"base":  base,
+		"body":  description,
 	}
 
 	data, err := json.Marshal(body)
