@@ -7,19 +7,11 @@ import (
 // GroupFilesByDepthMap groups files by directory up to `depth` segments.
 // Root-level files (no directory) are grouped under ".".
 // Returns a map: groupDir -> list of files.
-<<<<<<< HEAD
 func GroupFilesByDepthMap(files []FileChange, depth int) map[string][]FileChange {
 	result := make(map[string][]FileChange)
 	for _, f := range files {
 		path := filepath.Clean(f.Path)
 		segments := splitPathSegments(path)
-=======
-func GroupFilesByDepthMap(files []string, depth int) map[string][]string {
-	result := make(map[string][]string)
-	for _, f := range files {
-		f = filepath.Clean(f)
-		segments := splitPathSegments(f)
->>>>>>> main
 		var group string
 		if len(segments) == 1 {
 			group = "."
