@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func CreateGitLabMR(repo Repo, title, base, head string) error {
+func CreateGitLabMR(repo Repo, title, description, base, head string) error {
 	token := os.Getenv("GITLAB_TOKEN")
 	if token == "" {
 		return fmt.Errorf("GITLAB_TOKEN not set")
@@ -21,6 +21,7 @@ func CreateGitLabMR(repo Repo, title, base, head string) error {
 	)
 	body := map[string]string{
 		"title":         title,
+		"description":   description,
 		"source_branch": head,
 		"target_branch": base,
 	}
