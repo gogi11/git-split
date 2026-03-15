@@ -12,12 +12,15 @@ type CommitPlanner struct {
 	Base     string
 	Target   string
 	Size     int
-	Prefix   string
 	Push     bool
 	CreateMR bool
 }
 
-func (p CommitPlanner) Build() (plan.Plan, error) {
+func (p CommitPlanner) Build(remote string) (plan.Plan, error) {
+	resultingPlan, err := InitializePlan(remote)
+	if err != nil {
+		return plan.Plan{}, err
+	}
 	commits, err := git.GetCommitsBetween(p.Base, p.Target)
 	if err != nil {
 		return plan.Plan{}, err
@@ -42,5 +45,6 @@ func (p CommitPlanner) Build() (plan.Plan, error) {
 		})
 		currentBase = branch
 	}
-	return plan.Plan{Branches: branches}, nil
+	resultingPlan.Branches = branches
+	return resultingPlan, nil
 }
