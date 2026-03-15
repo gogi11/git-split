@@ -51,9 +51,9 @@ func Execute(p plan.Plan) error {
 					case git.MODIFIED, git.ADDED:
 						git.ApplyPathFromBranch(op.FromRef, fc.Path) // checkout/update file
 					case git.DELETED:
-						git.Run("rm", fc.Path) // remove file
+						git.DeleteFile(fc.Path) // remove file
 					case git.RENAMED:
-						git.Run("mv", fc.OldPath, fc.Path) // optional: rename
+						git.MoveFile(fc.OldPath, fc.Path) // optional: rename
 					}
 				}
 				msg := fmt.Sprintf(branch.MRTitle)

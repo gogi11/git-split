@@ -12,7 +12,6 @@ type CommitPlanner struct {
 	Base     string
 	Target   string
 	Size     int
-	Prefix   string
 	Push     bool
 	CreateMR bool
 }

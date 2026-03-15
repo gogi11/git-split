@@ -11,7 +11,6 @@ import (
 type DirectoryPlanner struct {
 	Base     string
 	Target   string
-	Prefix   string
 	Depth    int
 	Push     bool
 	CreateMR bool
