@@ -6,28 +6,17 @@ import (
 	"git-split/internal/git"
 	"git-split/internal/mr"
 	"git-split/internal/plan"
-	"git-split/internal/provider"
 )
 
 func Execute(p plan.Plan) error {
-	remote, err := git.GetRemoteURL()
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Remote URL: %s\n", remote)
-	repoInfo, err := provider.ParseRemote(remote)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Executing plan for repository: %s\n", repoInfo)
-
+	fmt.Printf("Executing plan for repository: %s\n", p.Repo.Name)
 	for _, branch := range p.Branches {
-		err = git.Checkout(branch.Base)
+		err := git.Checkout(branch.Base)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("Checked out to branch: %s\n", branch.Base)
-		err := git.CreateBranch(branch.Base, branch.Branch)
+		err = git.CreateBranch(branch.Base, branch.Branch)
 		if err != nil {
 			return err
 		}
@@ -57,14 +46,14 @@ func Execute(p plan.Plan) error {
 			}
 		}
 		if branch.Push {
-			err := git.Push(remote, branch.Branch)
+			err := git.Push(p.Remote, branch.Branch)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("Pushed branch: %s\n", branch.Branch)
 			if branch.CreateMR {
 				err := mr.Create(
-					repoInfo,
+					p.Repo,
 					branch.MRTitle,
 					branch.MRDescription,
 					branch.Base,

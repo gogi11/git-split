@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"git-split/internal/executor"
+	"git-split/internal/git"
 	"git-split/internal/plan"
 
 	"github.com/spf13/cobra"
@@ -30,8 +31,12 @@ var splitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		remote, err := git.SelectRemote()
+		if err != nil {
+			log.Fatal(err)
+		}
 		plannerImpl := SelectPlanner(mode)
-		planning, err := plannerImpl.Build()
+		planning, err := plannerImpl.Build(remote)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -21,18 +21,20 @@ func LoadRepo(target *string, base *string, autoDelete bool) error {
 		*target = current
 		fmt.Printf("Target branch not specified, using current branch: %s\n", *target)
 	}
-
 	if *base == *target {
 		return fmt.Errorf("Base and target branches cannot be the same")
 	}
-	err := git.RebaseOnto(*base)
-	if err != nil {
-		return fmt.Errorf("Rebase failed, aborting split: %w", err)
-	}
+	if autoDelete {
+		// do unasked stuff like rebasing and force pushing only if delete is set to avoid unwanted data loss
+		err := git.RebaseOnto(*base)
+		if err != nil {
+			return fmt.Errorf("Rebase failed, aborting split: %w", err)
+		}
 
-	err = git.ForcePush(*target, *base)
-	if err != nil {
-		return fmt.Errorf("Failed to push rebased branch: %w", err)
+		err = git.ForcePush(*target, *base)
+		if err != nil {
+			return fmt.Errorf("Failed to push rebased branch: %w", err)
+		}
 	}
 	return nil
 }

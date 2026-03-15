@@ -65,16 +65,12 @@ func ChunkCommits(commits []string, size int) [][]string {
 	return chunks
 }
 
-func Push(remote, branch string) error {
+func Push(remote string, branch string) error {
 	_, err := runGit("push", "-u", remote, branch)
 	return err
 }
 
-func GetRemoteURL() (string, error) {
-	remote, err := SelectRemote()
-	if err != nil {
-		return "", err
-	}
+func GetRemoteURL(remote string) (string, error) {
 	out, err := runGit("remote", "get-url", remote)
 	if err != nil {
 		return "", err
@@ -83,16 +79,13 @@ func GetRemoteURL() (string, error) {
 }
 
 func GetRemotes() ([]string, error) {
-
 	out, err := runGit("remote")
 	if err != nil {
 		return nil, err
 	}
-
 	if out == "" {
 		return []string{}, nil
 	}
-
 	return strings.Split(strings.TrimSpace(out), "\n"), nil
 }
 

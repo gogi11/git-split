@@ -8,8 +8,8 @@ func PrintPreview(p Plan) {
 	fmt.Println("")
 	fmt.Println("========== STACK PLAN ==========")
 	fmt.Printf("Remote:   %s\n", p.Remote)
-	fmt.Printf("Provider: %s\n", p.Provider)
-	fmt.Printf("Repo:     %s\n", p.Repo)
+	fmt.Printf("Provider: %s\n", p.Repo.Provider)
+	fmt.Printf("Repo:     %s\n", p.Repo.Name)
 	fmt.Println("")
 	for i, b := range p.Branches {
 		fmt.Printf("[%d] Branch: %s\n", i+1, b.Branch)

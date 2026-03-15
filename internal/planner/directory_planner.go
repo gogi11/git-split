@@ -16,8 +16,11 @@ type DirectoryPlanner struct {
 	CreateMR bool
 }
 
-func (p DirectoryPlanner) Build() (plan.Plan, error) {
-
+func (p DirectoryPlanner) Build(remote string) (plan.Plan, error) {
+	resultingPlan, err := InitializePlan(remote)
+	if err != nil {
+		return plan.Plan{}, err
+	}
 	files, err := git.GetChangedFilesWithStatus(p.Base, p.Target)
 	if err != nil {
 		return plan.Plan{}, err
@@ -51,5 +54,6 @@ func (p DirectoryPlanner) Build() (plan.Plan, error) {
 		})
 		currentBase = branch
 	}
-	return plan.Plan{Branches: branches}, nil
+	resultingPlan.Branches = branches
+	return resultingPlan, nil
 }
