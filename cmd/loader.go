@@ -8,8 +8,8 @@ import (
 	"git-split/internal/planner"
 )
 
-func LoadRepo(target *string, base *string) error {
-	git.Fetch()
+func LoadRepo(target *string, base *string, autoDelete bool) error {
+	git.Fetch(autoDelete)
 	if *target == "" {
 		current, err := git.GetCurrentBranch()
 		if err != nil {

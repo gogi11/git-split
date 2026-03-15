@@ -56,8 +56,7 @@ func Execute(p plan.Plan) error {
 						git.MoveFile(fc.OldPath, fc.Path) // optional: rename
 					}
 				}
-				msg := fmt.Sprintf(branch.MRTitle)
-				err := git.Commit(msg)
+				err := git.Commit(branch.MRTitle)
 				if err != nil {
 					log.Fatal(err)
 					return err

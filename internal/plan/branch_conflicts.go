@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func FixBranchConflicts(p Plan) error {
+func FixBranchConflicts(p Plan, autoDelete bool) error {
 	var existing []string
 	for _, b := range p.Branches {
 		if git.LocalBranchExists(b.Branch) || git.RemoteBranchExists(p.Remote, b.Branch) {
@@ -20,7 +20,7 @@ func FixBranchConflicts(p Plan) error {
 		for _, b := range existing {
 			fmt.Println(" -", b)
 		}
-		if !helpers.AskConfirmation("Delete them to continue?") {
+		if !autoDelete && !helpers.AskConfirmation("Delete them to continue?") {
 			log.Fatal("Aborting.")
 			return fmt.Errorf("branches exist already")
 		}

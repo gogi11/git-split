@@ -11,21 +11,22 @@ import (
 )
 
 var (
-	base      string
-	target    string
-	size      int
-	push      bool
-	createMR  bool
-	dryRun    bool
-	mode      string
-	pathDepth int
+	base       string
+	target     string
+	size       int
+	push       bool
+	createMR   bool
+	dryRun     bool
+	mode       string
+	pathDepth  int
+	autoDelete bool
 )
 
 var splitCmd = &cobra.Command{
 	Use:   "split",
 	Short: "Split commits into stacked branches",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := LoadRepo(&target, &base)
+		err := LoadRepo(&target, &base, autoDelete)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -34,7 +35,7 @@ var splitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = plan.FixBranchConflicts(planning)
+		err = plan.FixBranchConflicts(planning, autoDelete)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -56,7 +57,8 @@ func init() {
 	splitCmd.Flags().BoolVar(&createMR, "create-mr", false, "Create merge requests")
 	splitCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Simulate actions (without actually pushing)")
 	splitCmd.Flags().StringVar(&mode, "mode", "commit", "Spliting mode: commit | directory")
-	splitCmd.Flags().IntVar(&pathDepth, "path-depth", 1, "Path depth for directory-based splitting")
+	splitCmd.Flags().IntVar(&pathDepth, "depth", 2, "Path depth for directory-based splitting")
+	splitCmd.Flags().BoolVar(&autoDelete, "delete", false, "Sets delete on everything automatically (local/remote, fetch prune, etc.)")
 
 	rootCmd.AddCommand(splitCmd)
 }

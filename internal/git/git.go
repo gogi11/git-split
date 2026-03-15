@@ -171,8 +171,12 @@ func ForcePush(branch string, remote string) error {
 	return err
 }
 
-func Fetch() error {
-	_, err := runGit("fetch")
+func Fetch(prune bool) error {
+	args := []string{"fetch"}
+	if prune {
+		args = append(args, "--prune")
+	}
+	_, err := runGit(args...)
 	return err
 }
 
