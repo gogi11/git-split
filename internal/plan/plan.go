@@ -1,6 +1,9 @@
 package plan
 
-import "git-split/internal/git"
+import (
+	"git-split/internal/git"
+	"git-split/internal/provider"
+)
 
 type OperationType string
 
@@ -28,7 +31,6 @@ type BranchPlan struct {
 
 type Plan struct {
 	Remote   string
-	Provider string
-	Repo     string
+	Repo     provider.Repo
 	Branches []BranchPlan
 }
