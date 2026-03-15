@@ -35,16 +35,19 @@ var splitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = plan.FixBranchConflicts(planning, autoDelete)
-		if err != nil {
-			log.Fatal(err)
-		}
 		plan.PrintPreview(planning)
 		if dryRun {
 			fmt.Println("Dry-run mode enabled. No changes were made.")
 			return
 		}
-		executor.Execute(planning)
+		err = plan.FixBranchConflicts(planning, push, autoDelete)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = executor.Execute(planning)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

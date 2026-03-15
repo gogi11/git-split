@@ -196,12 +196,13 @@ func LocalBranchExists(branch string) bool {
 	return strings.TrimSpace(out) != ""
 }
 
-func DeleteBranch(remote string, branch string) error {
+func DeleteLocalBranch(remote string, branch string) error {
 	_, err := runGit("branch", "-D", branch)
-	if err != nil {
-		return err
-	}
-	_, err = runGit("push", remote, "--delete", branch)
+	return err
+}
+
+func DeleteRemoteBranch(remote string, branch string) error {
+	_, err := runGit("push", remote, "--delete", branch)
 	return err
 }
 
@@ -213,4 +214,9 @@ func DeleteFile(path string) error {
 func MoveFile(oldPath, newPath string) error {
 	_, err := runGit("mv", oldPath, newPath)
 	return err
+}
+
+func WorkingTreeClean() bool {
+	out, _ := runGit("status", "--porcelain")
+	return strings.TrimSpace(out) == ""
 }

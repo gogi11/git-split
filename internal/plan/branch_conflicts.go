@@ -4,33 +4,52 @@ import (
 	"fmt"
 	"git-split/helpers"
 	"git-split/internal/git"
-	"log"
 )
 
-func FixBranchConflicts(p Plan, autoDelete bool) error {
-	var existing []string
+func FixBranchConflicts(p Plan, isPushing bool, autoDelete bool) error {
+	var localConflicts []string
+	var remoteConflicts []string
 	for _, b := range p.Branches {
-		if git.LocalBranchExists(b.Branch) || git.RemoteBranchExists(p.Remote, b.Branch) {
-			existing = append(existing, b.Branch)
+		if git.LocalBranchExists(b.Branch) {
+			localConflicts = append(localConflicts, b.Branch)
+		}
+		if isPushing && git.RemoteBranchExists(p.Remote, b.Branch) {
+			remoteConflicts = append(remoteConflicts, b.Branch)
+		}
+	}
+	if len(localConflicts) == 0 && len(remoteConflicts) == 0 {
+		return nil
+	}
+
+	fmt.Println("The following local and remote branches already exist:")
+	if len(localConflicts) > 0 {
+		fmt.Println("LOCAL:")
+		for _, b := range localConflicts {
+			fmt.Println(" -", b)
+		}
+	}
+	if len(remoteConflicts) > 0 {
+		fmt.Println("REMOTE:")
+		for _, b := range remoteConflicts {
+			fmt.Println(" -", b)
 		}
 	}
 
-	if len(existing) > 0 {
-		fmt.Println("The following branches already exist:")
-		for _, b := range existing {
-			fmt.Println(" -", b)
+	if !autoDelete && !helpers.AskConfirmation("Delete them to continue?") {
+		return fmt.Errorf("Aborting due to user selection.")
+	}
+	for _, b := range localConflicts {
+		fmt.Println("Deleting branch:", b)
+		err := git.DeleteLocalBranch(p.Remote, b)
+		if err != nil {
+			return fmt.Errorf("Failed to delete local branch: %s", b)
 		}
-		if !autoDelete && !helpers.AskConfirmation("Delete them to continue?") {
-			log.Fatal("Aborting.")
-			return fmt.Errorf("branches exist already")
-		}
-		for _, b := range existing {
-			fmt.Println("Deleting branch:", b)
-			err := git.DeleteBranch(p.Remote, b)
-			if err != nil {
-				log.Fatal("Failed to delete branch:", b)
-				return err
-			}
+	}
+	for _, b := range remoteConflicts {
+		fmt.Println("Deleting branch:", b)
+		err := git.DeleteRemoteBranch(p.Remote, b)
+		if err != nil {
+			return fmt.Errorf("Failed to delete remote branch: %s", b)
 		}
 	}
 	return nil

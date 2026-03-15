@@ -2,19 +2,20 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
 	"git-split/internal/git"
 	"git-split/internal/planner"
 )
 
 func LoadRepo(target *string, base *string, autoDelete bool) error {
+	if !git.WorkingTreeClean() {
+		return fmt.Errorf("Working tree is not clean. Please commit or stash your changes before running the split.")
+	}
 	git.Fetch(autoDelete)
 	if *target == "" {
 		current, err := git.GetCurrentBranch()
 		if err != nil {
-			log.Fatal("Unable to detect current branch")
-			return fmt.Errorf("unable to detect current branch: %w", err)
+			return fmt.Errorf("Unable to detect current branch: %w", err)
 		}
 
 		*target = current
@@ -22,19 +23,16 @@ func LoadRepo(target *string, base *string, autoDelete bool) error {
 	}
 
 	if *base == *target {
-		log.Fatal("Base and target branches cannot be the same")
-		return fmt.Errorf("base and target branches cannot be the same")
+		return fmt.Errorf("Base and target branches cannot be the same")
 	}
 	err := git.RebaseOnto(*base)
 	if err != nil {
-		log.Fatal("Rebase failed, aborting split.")
-		return err
+		return fmt.Errorf("Rebase failed, aborting split: %w", err)
 	}
 
 	err = git.ForcePush(*target, *base)
 	if err != nil {
-		log.Fatal("Failed to push rebased branch.")
-		return err
+		return fmt.Errorf("Failed to push rebased branch: %w", err)
 	}
 	return nil
 }
