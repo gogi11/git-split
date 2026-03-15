@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"git-split/internal/git"
 	"net/url"
 	"strings"
 )
@@ -24,41 +25,44 @@ type Repo struct {
 	Provider  Provider
 }
 
-func ParseRemote(remote string) (Repo, error) {
-
-	if strings.HasPrefix(remote, "git@") {
-		return parseSSH(remote)
-	}
-
-	if strings.HasPrefix(remote, "http") {
-		return parseHTTP(remote)
-	}
-
-	return Repo{}, fmt.Errorf("unsupported remote format: %s", remote)
-}
-
-func parseHTTP(remote string) (Repo, error) {
-
-	u, err := url.Parse(remote)
+func BuildRepo(remote string) (Repo, error) {
+	remoteUrl, err := git.GetRemoteURL(remote)
 	if err != nil {
 		return Repo{}, err
 	}
+	fmt.Printf("Remote URL: %s\n", remoteUrl)
+	repoInfo, err := parseRemote(remoteUrl)
+	if err != nil {
+		return Repo{}, err
+	}
+	return repoInfo, nil
+}
 
+func parseRemote(remoteUrl string) (Repo, error) {
+	if strings.HasPrefix(remoteUrl, "git@") {
+		return parseSSH(remoteUrl)
+	}
+	if strings.HasPrefix(remoteUrl, "http") {
+		return parseHTTP(remoteUrl)
+	}
+	return Repo{}, fmt.Errorf("unsupported remote format: %s", remoteUrl)
+}
+
+func parseHTTP(remoteUrl string) (Repo, error) {
+	u, err := url.Parse(remoteUrl)
+	if err != nil {
+		return Repo{}, err
+	}
 	p := strings.TrimSuffix(u.Path, ".git")
 	p = strings.TrimPrefix(p, "/")
-
 	parts := strings.Split(p, "/")
-
 	if len(parts) < 2 {
 		return Repo{}, fmt.Errorf("invalid remote path")
 	}
-
 	repo := parts[len(parts)-1]
 	namespace := strings.Join(parts[:len(parts)-1], "/")
 	owner := parts[0]
-
 	host := u.Host
-
 	return Repo{
 		Host:      host,
 		Owner:     owner,
@@ -69,30 +73,22 @@ func parseHTTP(remote string) (Repo, error) {
 	}, nil
 }
 
-func parseSSH(remote string) (Repo, error) {
-
+func parseSSH(remoteUrl string) (Repo, error) {
 	// git@github.com:org/repo.git
-	parts := strings.Split(remote, ":")
-
+	parts := strings.Split(remoteUrl, ":")
 	if len(parts) != 2 {
 		return Repo{}, fmt.Errorf("invalid ssh remote")
 	}
-
 	hostPart := strings.Split(parts[0], "@")
 	host := hostPart[1]
-
 	p := strings.TrimSuffix(parts[1], ".git")
-
 	pathParts := strings.Split(p, "/")
-
 	if len(pathParts) < 2 {
 		return Repo{}, fmt.Errorf("invalid repo path")
 	}
-
 	repo := pathParts[len(pathParts)-1]
 	namespace := strings.Join(pathParts[:len(pathParts)-1], "/")
 	owner := pathParts[0]
-
 	return Repo{
 		Host:      host,
 		Owner:     owner,
@@ -104,9 +100,7 @@ func parseSSH(remote string) (Repo, error) {
 }
 
 func detectAPI(host string) string {
-
 	switch {
-
 	case strings.Contains(host, "github"):
 		return "https://api.github.com"
 

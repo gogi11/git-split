@@ -8,11 +8,6 @@ import (
 	"strings"
 )
 
-func Run(args ...string) error {
-	_, err := runGit(args...)
-	return err
-}
-
 func runGit(args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	var out bytes.Buffer
@@ -70,16 +65,12 @@ func ChunkCommits(commits []string, size int) [][]string {
 	return chunks
 }
 
-func Push(remote, branch string) error {
+func Push(remote string, branch string) error {
 	_, err := runGit("push", "-u", remote, branch)
 	return err
 }
 
-func GetRemoteURL() (string, error) {
-	remote, err := SelectRemote()
-	if err != nil {
-		return "", err
-	}
+func GetRemoteURL(remote string) (string, error) {
 	out, err := runGit("remote", "get-url", remote)
 	if err != nil {
 		return "", err
@@ -88,37 +79,16 @@ func GetRemoteURL() (string, error) {
 }
 
 func GetRemotes() ([]string, error) {
-
 	out, err := runGit("remote")
 	if err != nil {
 		return nil, err
 	}
-
 	if out == "" {
 		return []string{}, nil
 	}
-
 	return strings.Split(strings.TrimSpace(out), "\n"), nil
 }
 
-func GetChangedFiles(base, target string) ([]string, error) {
-	// DEPRECATED, WE USE GetChangedFilesWithStatus INSTEAD
-	out, err := runGit(
-		"diff",
-		"--name-only",
-		base+".."+target,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if out == "" {
-		return []string{}, nil
-	}
-
-	return strings.Split(out, "\n"), nil
-}
 func GetCommitsForFiles(base, target string, files []string) ([]string, error) {
 	args := []string{
 		"log",
@@ -162,4 +132,84 @@ func ApplyPathFromBranch(targetBranch, path string) error {
 		path,
 	)
 	return err
+}
+
+func GetCurrentBranch() (string, error) {
+	out, err := runGit("branch", "--show-current")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out), nil
+}
+
+func RebaseOnto(base string) error {
+	fmt.Println("Rebasing target branch onto base...")
+	_, err := runGit("rebase", base)
+	if err != nil {
+		fmt.Println("Rebase failed. Please resolve conflicts manually.")
+		runGit("rebase", "--abort")
+		return err
+	}
+	return nil
+}
+
+func ForcePush(branch string, remote string) error {
+	fmt.Printf("Force pushing rebased branch %s...\n", branch)
+	_, err := runGit(
+		"push",
+		remote,
+		branch,
+		"--force-with-lease",
+	)
+	return err
+}
+
+func Fetch(prune bool) error {
+	args := []string{"fetch"}
+	if prune {
+		args = append(args, "--prune")
+	}
+	_, err := runGit(args...)
+	return err
+}
+
+func RemoteBranchExists(remote string, branch string) bool {
+	out, err := runGit("branch", "-r", "--list", remote+"/"+branch)
+	if err != nil {
+		return false
+	}
+	return strings.TrimSpace(out) != ""
+}
+
+func LocalBranchExists(branch string) bool {
+	out, err := runGit("branch", "-a", "--list", branch)
+	if err != nil {
+		return false
+	}
+	return strings.TrimSpace(out) != ""
+}
+
+func DeleteLocalBranch(remote string, branch string) error {
+	_, err := runGit("branch", "-D", branch)
+	return err
+}
+
+func DeleteRemoteBranch(remote string, branch string) error {
+	_, err := runGit("push", remote, "--delete", branch)
+	return err
+}
+
+func DeleteFile(path string) error {
+	_, err := runGit("rm", path)
+	return err
+}
+
+func MoveFile(oldPath, newPath string) error {
+	_, err := runGit("mv", oldPath, newPath)
+	return err
+}
+
+func WorkingTreeClean() bool {
+	out, _ := runGit("status", "--porcelain")
+	return strings.TrimSpace(out) == ""
 }
