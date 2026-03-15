@@ -14,8 +14,5 @@ go build -o output/git-split.exe
 
 ## Commands to run:
 ```bash
-output/git-split.exe split
-  --target name-of-target-branch \
-  --mode directory \
-  --dry-run
+output/git-split.exe split  --mode directory  --dry-run
 ```
