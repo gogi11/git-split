@@ -19,11 +19,12 @@ func CreateGitLabMR(repo Repo, title, description, base, head string) error {
 		"https://gitlab.com/api/v4/projects/%s/merge_requests",
 		project,
 	)
-	body := map[string]string{
-		"title":         title,
-		"description":   description,
-		"source_branch": head,
-		"target_branch": base,
+	body := map[string]interface{}{
+		"title":                title,
+		"description":          description,
+		"source_branch":        head,
+		"target_branch":        base,
+		"remove_source_branch": true,
 	}
 	data, err := json.Marshal(body)
 	if err != nil {
