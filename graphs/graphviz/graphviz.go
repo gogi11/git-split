@@ -43,6 +43,7 @@ func ToDOT(g *graphs.Graph) string {
 				default:
 					attrs = append(attrs, `fillcolor="white"`)
 				}
+				fmt.Printf("Node %s has change type %s\n", n.ID, v)
 			} else {
 				attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
 			}
@@ -84,16 +85,6 @@ func ToDOT(g *graphs.Graph) string {
 	return b.String()
 }
 
-func WriteDOTFile(g *graphs.Graph, path string) error {
-	dot := ToDOT(g)
-	return os.WriteFile(path, []byte(dot), 0644)
-}
-
-func RenderDOTToFile(dotPath, outputPath, format string) error {
-	_, err := runGraphviz("-T"+format, dotPath, "-o", outputPath)
-	return err
-}
-
 func runGraphviz(args ...string) (string, error) {
 	cmd := exec.Command("dot", args...)
 	var out bytes.Buffer
@@ -110,7 +101,21 @@ func runGraphviz(args ...string) (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func CreateGraphImage(g *graphs.Graph) {
-	WriteDOTFile(g, "output/graph.dot")
+func WriteDOTFile(g *graphs.Graph, path string, verbose bool) error {
+	dot := ToDOT(g)
+	if verbose {
+		fmt.Printf("Writing DOT file to %s\n", path)
+		fmt.Printf("Dot: \n%s", dot)
+	}
+	return os.WriteFile(path, []byte(dot), 0644)
+}
+
+func RenderDOTToFile(dotPath, outputPath, format string) error {
+	_, err := runGraphviz("-T"+format, dotPath, "-o", outputPath)
+	return err
+}
+
+func CreateGraphImage(g *graphs.Graph, verbose bool) {
+	WriteDOTFile(g, "output/graph.dot", verbose)
 	RenderDOTToFile("output/graph.dot", "output/graph.png", "png")
 }

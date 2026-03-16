@@ -14,7 +14,7 @@ type FilesGraph struct {
 func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 	fileGraph := &FilesGraph{graphs.NewGraph()}
 	fileGraph.AddNode(".", ".", "directory")
-	fileGraph.Nodes["."].Attrs["_depth"] = "0"
+	fileGraph.Nodes["."].Attrs["depth"] = "0"
 	for i, path := range paths {
 		var oldPath string
 		for j, p := range path {
@@ -32,7 +32,7 @@ func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 					} else if j == 1 { // if it is a rename (move) and is new name add edge from old path to new path
 						fileGraph.AddEdge(oldPath, currentDir, "R", "", 1)
 					}
-					fileGraph.Nodes[currentDir].Attrs["_depth"] = fmt.Sprintf("%d", depth)
+					fileGraph.Nodes[currentDir].Attrs["depth"] = fmt.Sprintf("%d", depth)
 					fileGraph.Nodes[currentDir].Attrs["change"] = actions[i]
 				}
 				fileGraph.AddEdge(parentDir, currentDir, "contains", "", 1)

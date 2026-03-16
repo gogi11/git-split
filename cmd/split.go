@@ -24,6 +24,7 @@ var (
 	mode       string
 	pathDepth  int
 	autoDelete bool
+	verbose    bool
 )
 
 var splitCmd = &cobra.Command{
@@ -72,7 +73,7 @@ var graphCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		fileGraph := filegraphs.NewFilesGraph(actions, files)
-		graphviz.CreateGraphImage(fileGraph.Graph)
+		graphviz.CreateGraphImage(fileGraph.Graph, verbose)
 	},
 }
 
@@ -91,6 +92,7 @@ func init() {
 
 	graphCmd.Flags().StringVar(&base, "base", "main", "Base branch")
 	graphCmd.Flags().StringVar(&target, "target", "", "Target branch")
+	graphCmd.Flags().BoolVar(&verbose, "verbose", true, "Whether to display extra logs")
 
 	rootCmd.AddCommand(graphCmd)
 }
