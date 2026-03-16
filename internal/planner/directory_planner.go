@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"git-split/helpers"
+	"git-split/internal/filechanges"
 	"git-split/internal/git"
 	"git-split/internal/plan"
 )
@@ -21,11 +22,15 @@ func (p DirectoryPlanner) Build(remote string) (plan.Plan, error) {
 	if err != nil {
 		return plan.Plan{}, err
 	}
-	files, err := git.GetChangedFilesWithStatus(p.Base, p.Target)
+	actions, paths, err := git.GetChangedFilesWithStatus(p.Base, p.Target)
 	if err != nil {
 		return plan.Plan{}, err
 	}
-	sortedDirs := helpers.SortMap[git.FileChange](git.GroupFilesByDepthMap(files, p.Depth))
+	files, err := filechanges.ConvertFileWithStatusLinesToFileChange(actions, paths)
+	if err != nil {
+		return plan.Plan{}, err
+	}
+	sortedDirs := helpers.SortMap(filechanges.GroupFilesByDepthMap(files, p.Depth))
 	var branches []plan.BranchPlan
 	currentBase := p.Base
 	for i, filesPerDir := range sortedDirs {

@@ -1,8 +1,7 @@
-package git
+package filechanges
 
 import (
 	"fmt"
-	"strings"
 )
 
 type FileChangeAction string
@@ -20,29 +19,14 @@ type FileChange struct {
 	Action  FileChangeAction
 }
 
-func GetChangedFilesWithStatus(base, target string) ([]FileChange, error) {
-	out, err := runGit("diff", "--name-status", base+".."+target)
-	if err != nil {
-		return nil, err
-	}
-	lines := strings.Split(out, "\n")
-	changes, err := convertFileWithStatusLinesToFileChange(lines)
-	if err != nil {
-		return nil, err
-	}
-	return changes, nil
-}
-
-func convertFileWithStatusLinesToFileChange(lines []string) ([]FileChange, error) {
+func ConvertFileWithStatusLinesToFileChange(actions []string, paths [][]string) ([]FileChange, error) {
 	var result []FileChange
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		parts := strings.Fields(line)
-		detected_action := parts[0]
+	if len(actions) != len(paths) {
+		return result, fmt.Errorf("actions and paths length mismatch")
+	}
+	for i := range actions {
 		var action FileChangeAction
-		switch detected_action {
+		switch actions[i] {
 		case "A":
 			action = ADDED
 		case "M":
@@ -52,18 +36,18 @@ func convertFileWithStatusLinesToFileChange(lines []string) ([]FileChange, error
 		case "R":
 			action = RENAMED
 		default:
-			return nil, fmt.Errorf("unknown action: %s", detected_action)
+			return nil, fmt.Errorf("unknown action: %s", actions[i])
 		}
 		switch action {
 		case MODIFIED, ADDED, DELETED:
 			result = append(result, FileChange{
-				Path:   parts[1],
+				Path:   paths[i][0],
 				Action: action,
 			})
 		case RENAMED:
 			result = append(result, FileChange{
-				Path:    parts[2],
-				OldPath: parts[1],
+				OldPath: paths[i][0],
+				Path:    paths[i][1],
 				Action:  action,
 			})
 		}

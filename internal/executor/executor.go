@@ -3,6 +3,7 @@ package executor
 import (
 	"fmt"
 
+	"git-split/internal/filechanges"
 	"git-split/internal/git"
 	"git-split/internal/mr"
 	"git-split/internal/plan"
@@ -31,11 +32,11 @@ func Execute(p plan.Plan) error {
 			case plan.OpApplyPath:
 				for _, fc := range op.FileChanges {
 					switch fc.Action {
-					case git.MODIFIED, git.ADDED:
+					case filechanges.MODIFIED, filechanges.ADDED:
 						git.ApplyPathFromBranch(op.FromRef, fc.Path) // checkout/update file
-					case git.DELETED:
+					case filechanges.DELETED:
 						git.DeleteFile(fc.Path) // remove file
-					case git.RENAMED:
+					case filechanges.RENAMED:
 						git.MoveFile(fc.OldPath, fc.Path) // optional: rename
 					}
 				}

@@ -1,7 +1,7 @@
 package plan
 
 import (
-	"git-split/internal/git"
+	"git-split/internal/filechanges"
 	"git-split/internal/provider"
 )
 
@@ -15,7 +15,7 @@ const (
 type Operation struct {
 	Type        OperationType
 	Commits     []string
-	FileChanges []git.FileChange
+	FileChanges []filechanges.FileChange
 	FromRef     string
 }
 

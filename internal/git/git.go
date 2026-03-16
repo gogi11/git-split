@@ -213,3 +213,19 @@ func WorkingTreeClean() bool {
 	out, _ := runGit("status", "--porcelain")
 	return strings.TrimSpace(out) == ""
 }
+
+func GetChangedFilesWithStatus(base, target string) ([]string, [][]string, error) {
+	var actions []string
+	var paths [][]string
+	out, err := runGit("diff", "--name-status", base+".."+target)
+	if err != nil {
+		return actions, paths, err
+	}
+	lines := strings.Split(out, "\n")
+	for _, line := range lines {
+		split_line := strings.Fields(line)
+		actions = append(actions, split_line[0])
+		paths = append(paths, split_line[1:])
+	}
+	return actions, paths, nil
+}
