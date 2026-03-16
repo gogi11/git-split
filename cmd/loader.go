@@ -7,8 +7,8 @@ import (
 	"git-split/internal/planner"
 )
 
-func LoadRepo(target *string, base *string, autoDelete bool) error {
-	if !git.WorkingTreeClean() {
+func LoadRepo(target *string, base *string, autoDelete bool, checkWorkingTree bool) error {
+	if checkWorkingTree && !git.WorkingTreeClean() {
 		return fmt.Errorf("Working tree is not clean. Please commit or stash your changes before running the split.")
 	}
 	git.Fetch(autoDelete)

@@ -14,7 +14,7 @@ func ToDOT(g *graphs.Graph) string {
 	var b strings.Builder
 
 	b.WriteString("digraph G {\n")
-	b.WriteString("  rankdir=LR;\n")
+	b.WriteString("  rankdir=TB;\n")
 	b.WriteString("  node [shape=box style=filled];\n\n")
 
 	// Nodes
@@ -43,7 +43,6 @@ func ToDOT(g *graphs.Graph) string {
 				default:
 					attrs = append(attrs, `fillcolor="white"`)
 				}
-				fmt.Printf("Node %s has change type %s\n", n.ID, v)
 			} else {
 				attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
 			}

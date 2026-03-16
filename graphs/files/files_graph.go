@@ -23,7 +23,7 @@ func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 			for depth, dirName := range dirs {
 				parentDir := currentDir
 				currentDir = strings.TrimRight(currentDir, "/") + "/" + dirName
-				if currentDir != p { // if directory, add the node
+				if currentDir != "./"+p { // if directory, add the node
 					fileGraph.AddNode(currentDir, dirName, "directory")
 				} else { // if file, add the node and edge based on action
 					fileGraph.AddNode(currentDir, dirName, "file")

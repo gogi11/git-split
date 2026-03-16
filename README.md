@@ -17,3 +17,8 @@ go build -o output/git-split.exe
 output/git-split.exe split --mode directory --dry-run
 output/git-split.exe graph
 ```
+
+Or do both in one command:
+```bash
+go build -o output/git-split.exe | output/git-split.exe graph
+```

@@ -31,7 +31,7 @@ var splitCmd = &cobra.Command{
 	Use:   "split",
 	Short: "Split commits into stacked branches",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := LoadRepo(&target, &base, autoDelete)
+		err := LoadRepo(&target, &base, autoDelete, true)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -64,7 +64,7 @@ var graphCmd = &cobra.Command{
 	Use:   "graph",
 	Short: "Generate a graph of file changes",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := LoadRepo(&target, &base, autoDelete)
+		err := LoadRepo(&target, &base, autoDelete, false)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -92,7 +92,7 @@ func init() {
 
 	graphCmd.Flags().StringVar(&base, "base", "main", "Base branch")
 	graphCmd.Flags().StringVar(&target, "target", "", "Target branch")
-	graphCmd.Flags().BoolVar(&verbose, "verbose", true, "Whether to display extra logs")
+	graphCmd.Flags().BoolVar(&verbose, "verbose", false, "Whether to display extra logs")
 
 	rootCmd.AddCommand(graphCmd)
 }
