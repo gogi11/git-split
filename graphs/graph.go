@@ -55,6 +55,13 @@ func (g *Graph) AddEdge(from, to, typ, label string, weight float64) {
 		Attrs:  map[string]string{},
 	}
 
+	if g.Outgoing[from] != nil {
+		for _, e := range g.Outgoing[from] {
+			if e.To == to && e.Type == typ {
+				return // skip adding duplicate edge
+			}
+		}
+	}
 	g.Edges = append(g.Edges, edge)
 
 	g.Outgoing[from] = append(g.Outgoing[from], edge)

@@ -1,4 +1,4 @@
-package filesgraph
+package files
 
 import (
 	"git-split/graphs"

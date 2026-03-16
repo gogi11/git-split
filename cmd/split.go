@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	filegraphs "git-split/graphs/files"
+	"git-split/graphs/graphviz"
+
 	"git-split/internal/executor"
 	"git-split/internal/git"
 	"git-split/internal/plan"
@@ -53,6 +56,23 @@ var splitCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+	},
+}
+
+var fileGraphCmd = &cobra.Command{
+	Use:   "graph",
+	Short: "Generate a graph of file changes",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := LoadRepo(&target, &base, autoDelete)
+		if err != nil {
+			log.Fatal(err)
+		}
+		actions, files, err := git.GetChangedFilesWithStatus(base, target)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fileGraph := filegraphs.NewFilesGraph(actions, files)
+		graphviz.CreateGraphImage(fileGraph.Graph)
 	},
 }
 
