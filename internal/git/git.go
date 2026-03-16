@@ -224,7 +224,7 @@ func GetChangedFilesWithStatus(base, target string) ([]string, [][]string, error
 	lines := strings.Split(out, "\n")
 	for _, line := range lines {
 		split_line := strings.Fields(line)
-		actions = append(actions, split_line[0])
+		actions = append(actions, split_line[0][0:1])
 		paths = append(paths, split_line[1:])
 	}
 	return actions, paths, nil
