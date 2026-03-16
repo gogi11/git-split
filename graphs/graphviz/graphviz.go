@@ -27,7 +27,25 @@ func ToDOT(g *graphs.Graph) string {
 			fmt.Sprintf(`label="%s"`, label),
 		}
 		for k, v := range n.Attrs {
-			attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
+			if k[0] == '_' {
+				continue // skip internal attributes
+			}
+			if k == "change" {
+				switch v {
+				case "A":
+					attrs = append(attrs, `fillcolor="palegreen"`)
+				case "M":
+					attrs = append(attrs, `fillcolor="khaki"`)
+				case "D":
+					attrs = append(attrs, `fillcolor="lightcoral"`)
+				case "R":
+					attrs = append(attrs, `fillcolor="lightblue"`)
+				default:
+					attrs = append(attrs, `fillcolor="white"`)
+				}
+			} else {
+				attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
+			}
 		}
 		attrString := strings.Join(attrs, ",")
 		b.WriteString(fmt.Sprintf(`  "%s" [%s];`, n.ID, attrString))
