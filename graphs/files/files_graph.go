@@ -33,8 +33,8 @@ func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 						fileGraph.AddEdge(oldPath, currentDir, "R", "", 1)
 					}
 					fileGraph.Nodes[currentDir].Attrs["_depth"] = fmt.Sprintf("%d", depth)
+					fileGraph.Nodes[currentDir].Attrs["change"] = actions[i]
 				}
-				fileGraph.Nodes[currentDir].Attrs["change"] = actions[i]
 				fileGraph.AddEdge(parentDir, currentDir, "contains", "", 1)
 			}
 			oldPath = currentDir
