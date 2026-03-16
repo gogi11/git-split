@@ -59,7 +59,7 @@ var splitCmd = &cobra.Command{
 	},
 }
 
-var fileGraphCmd = &cobra.Command{
+var graphCmd = &cobra.Command{
 	Use:   "graph",
 	Short: "Generate a graph of file changes",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -77,7 +77,6 @@ var fileGraphCmd = &cobra.Command{
 }
 
 func init() {
-
 	splitCmd.Flags().StringVar(&base, "base", "main", "Base branch")
 	splitCmd.Flags().StringVar(&target, "target", "", "Target branch")
 	splitCmd.Flags().IntVar(&size, "size", 5, "Commits per branch")
@@ -89,4 +88,9 @@ func init() {
 	splitCmd.Flags().BoolVar(&autoDelete, "delete", false, "Sets delete on everything automatically (local/remote, fetch prune, etc.)")
 
 	rootCmd.AddCommand(splitCmd)
+
+	graphCmd.Flags().StringVar(&base, "base", "main", "Base branch")
+	graphCmd.Flags().StringVar(&target, "target", "", "Target branch")
+
+	rootCmd.AddCommand(graphCmd)
 }
