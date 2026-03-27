@@ -61,7 +61,7 @@ func ToDOT(g *graphs.Graph) string {
 
 			if e.Type == "depends_on" {
 				attrs = append(attrs, `color="red"`)
-				attrs = append(attrs, fmt.Sprintf(`penwidth="%f"`, 1+e.Weight*5))
+				attrs = append(attrs, fmt.Sprintf(`penwidth="%f"`, 1+e.Weight))
 			}
 		}
 		if e.Weight != 0 {

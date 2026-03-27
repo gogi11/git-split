@@ -2,6 +2,7 @@ package files
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"git-split/graphs"
@@ -30,12 +31,12 @@ func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 					if actions[i] != "R" { // add edge from parent to file if not a rename
 						fileGraph.AddEdge(parentDir, currentDir, actions[i], "", 1)
 					} else if j == 1 { // if it is a rename (move) and is new name add edge from old path to new path
-						fileGraph.AddEdge(oldPath, currentDir, "R", "", 1)
+						fileGraph.AddEdge(oldPath, currentDir, "rename", "Rename", 1)
 					}
 					fileGraph.Nodes[currentDir].Attrs["depth"] = fmt.Sprintf("%d", depth)
 					fileGraph.Nodes[currentDir].Attrs["change"] = actions[i]
 				}
-				fileGraph.AddEdge(parentDir, currentDir, "contains", "", 1)
+				fileGraph.AddEdge(parentDir, currentDir, "contains", "Contains", 1)
 			}
 			oldPath = currentDir
 		}
@@ -51,8 +52,20 @@ func (fileGraph *FilesGraph) AddDependencyEdges() {
 				continue
 			}
 			// open the file and search for references to the changed file, if found add a dependency edge with weight based on how closely it matches the file path
-			// search only the first 300 lines of the file to avoid performance issues, as references are likely to be found in imports / requires / file references at the top of the file
+			// search only the first 70 lines of the file to focus on actual imports vs variables and stuff like that.
 			for ref, weight := range search.fileSearcheScore {
+				file, err := os.ReadFile(node.ID)
+				if err != nil {
+					continue
+				}
+				lines := strings.Split(string(file), "\n")
+				if len(lines) > 70 {
+					lines = lines[:70]
+				}
+				if strings.Contains(strings.Join(lines, "\n"), ref) {
+					fileGraph.AddEdgeOrMaxWeight(node.ID, search.Node.ID, "depends_on", "Dependency Score", weight)
+				}
+
 				if strings.Contains(node.ID, ref) {
 					fileGraph.AddEdgeOrMaxWeight(node.ID, search.Node.ID, "depends_on", "Dependency Score", weight)
 				}
@@ -64,7 +77,7 @@ func (fileGraph *FilesGraph) AddDependencyEdges() {
 	for _, node := range fileGraph.GetLeaves() {
 		for _, sibling := range fileGraph.GetLeaves() {
 			if node.ID != sibling.ID && strings.HasPrefix(node.ID, strings.TrimSuffix(sibling.ID, sibling.ID[strings.LastIndex(sibling.ID, "/"):])) {
-				fileGraph.AddEdgeOrAccumulateWeight(node.ID, sibling.ID, "depends_on", "Sibling Dependency", 0.05)
+				fileGraph.AddEdgeOrAccumulateWeight(node.ID, sibling.ID, "depends_on", "Sibling Dependency", 0.1)
 			}
 		}
 	}

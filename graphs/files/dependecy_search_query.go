@@ -41,6 +41,11 @@ func getPossibleFileRefs(node *graphs.Node) map[string]float64 {
 	length := len(parts)
 	for i := range parts {
 		weight := calcWeight(length-i, length)
+		// skip inbetween directories; this helps reduce loop amounts for nested repos. Maybe we can remove it??
+		// TODO: see if this is still needed
+		if weight < 0.5 {
+			continue
+		}
 		addWithSeparators(allRefs, strings.Join(parts[i:], "/"), weight)
 		addWithSeparators(allRefs, strings.Join(partsNoExtension[i:], "/"), weight)
 	}
@@ -62,11 +67,11 @@ func calcWeight(depth, length int) float64 {
 
 	// if it is only the file name or a couple of parent directories, it is likely the file is referenced, but could be comment / string / other file reference
 	case length - 1:
-		weight = 0.7
+		weight = 0.6 // TODO: maybe do a smarter chech if it is only the file name - take length into consideration? OR check tokens before / after to rule out variable / string references
 	case length - 2:
 		weight = 0.8
 	case length - 3:
-		weight = 0.75
+		weight = 0.7
 
 	// if it is somewhere inbetween, most likely is not a reference
 	default:

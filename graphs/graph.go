@@ -115,6 +115,26 @@ func (g *Graph) RemoveEdge(edge *Edge) {
 	}
 }
 
+func (g *Graph) GetParent(node *Node, edgeType string) *Node {
+	for _, edge := range g.Outgoing[node.ID] {
+		if edge.Type == edgeType {
+			return g.Nodes[edge.From]
+		}
+	}
+	return nil
+}
+
+func (g *Graph) GetEdge(start, end *Node, edgeType string) *Edge {
+	for _, edge := range g.Incoming[start.ID] {
+		if edge.Type == edgeType {
+			if edge.To == end.ID {
+				return edge
+			}
+		}
+	}
+	return nil
+}
+
 func (g *Graph) FilterEdges(typ string, weight float64) []*Edge {
 	// Removes all edges of the type typ and weight less than weight
 	// and returns all removed edges

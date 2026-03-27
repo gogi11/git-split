@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"git-split/graphs/clustering"
 	filegraphs "git-split/graphs/files"
 	"git-split/graphs/graphviz"
 
@@ -76,6 +77,15 @@ var graphCmd = &cobra.Command{
 		fileGraph.AddDependencyEdges()
 		// fileGraph.FilterEdges("depends_on", 1.0)
 		graphviz.CreateGraphImage(fileGraph.Graph, verbose)
+
+		for i, cluster := range clustering.HybridCluster(fileGraph.Graph, 1, 3) {
+			fmt.Printf("Cluster %d \n", i)
+			for _, node := range cluster {
+				fmt.Println(node.ID)
+			}
+			fmt.Println()
+		}
+
 	},
 }
 
