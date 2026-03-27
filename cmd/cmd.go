@@ -73,6 +73,8 @@ var graphCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		fileGraph := filegraphs.NewFilesGraph(actions, files)
+		fileGraph.AddDependencyEdges()
+		// fileGraph.FilterEdges("depends_on", 1.0)
 		graphviz.CreateGraphImage(fileGraph.Graph, verbose)
 	},
 }

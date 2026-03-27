@@ -45,7 +45,7 @@ func (g *Graph) AddNode(id, label, typ string) {
 		Attrs: map[string]string{},
 	}
 }
-func (g *Graph) AddEdge(from, to, typ, label string, weight float64) {
+func (g *Graph) addEdge(from, to, typ, label string, weight float64, handleDuplicate string) {
 	edge := &Edge{
 		From:   from,
 		To:     to,
@@ -58,7 +58,17 @@ func (g *Graph) AddEdge(from, to, typ, label string, weight float64) {
 	if g.Outgoing[from] != nil {
 		for _, e := range g.Outgoing[from] {
 			if e.To == to && e.Type == typ {
-				return // skip adding duplicate edge
+				switch handleDuplicate {
+				case "accumulate":
+					e.Weight += weight
+				case "max":
+					if e.Weight < weight {
+						e.Weight = weight
+					}
+				default:
+					return
+				}
+				return
 			}
 		}
 	}
@@ -66,6 +76,58 @@ func (g *Graph) AddEdge(from, to, typ, label string, weight float64) {
 
 	g.Outgoing[from] = append(g.Outgoing[from], edge)
 	g.Incoming[to] = append(g.Incoming[to], edge)
+}
+
+func (g *Graph) AddEdge(from, to, typ, label string, weight float64) {
+	g.addEdge(from, to, typ, label, weight, "")
+}
+func (g *Graph) AddEdgeOrAccumulateWeight(from, to, typ, label string, weight float64) {
+	g.addEdge(from, to, typ, label, weight, "accumulate")
+}
+func (g *Graph) AddEdgeOrMaxWeight(from, to, typ, label string, weight float64) {
+	g.addEdge(from, to, typ, label, weight, "max")
+}
+
+func (g *Graph) RemoveEdge(edge *Edge) {
+	for i, e := range g.Edges {
+		if e == edge {
+			g.Edges = append(g.Edges[:i], g.Edges[i+1:]...)
+			break
+		}
+	}
+	for i, e := range g.Outgoing[edge.From] {
+		if e == edge {
+			g.Outgoing[edge.From] = append(g.Outgoing[edge.From][:i], g.Outgoing[edge.From][i+1:]...)
+			if len(g.Outgoing[edge.From]) == 0 {
+				delete(g.Outgoing, edge.From)
+			}
+			break
+		}
+	}
+	for i, e := range g.Incoming[edge.To] {
+		if e == edge {
+			g.Incoming[edge.To] = append(g.Incoming[edge.To][:i], g.Incoming[edge.To][i+1:]...)
+			if len(g.Incoming[edge.To]) == 0 {
+				delete(g.Incoming, edge.To)
+			}
+			break
+		}
+	}
+}
+
+func (g *Graph) FilterEdges(typ string, weight float64) []*Edge {
+	// Removes all edges of the type typ and weight less than weight
+	// and returns all removed edges
+	var edges []*Edge
+	for _, edge := range g.Edges {
+		if edge.Type == typ && edge.Weight < weight {
+			edges = append(edges, edge)
+		}
+	}
+	for _, edge := range edges {
+		g.RemoveEdge(edge)
+	}
+	return edges
 }
 
 func (g *Graph) GetNode(id string) (*Node, bool) {

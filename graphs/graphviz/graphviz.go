@@ -56,14 +56,16 @@ func ToDOT(g *graphs.Graph) string {
 	// Edges
 	for _, e := range g.Edges {
 		attrs := []string{}
-		if e.Label != "" {
-			attrs = append(attrs, fmt.Sprintf(`label="%s"`, e.Label))
-		}
 		if e.Type != "" {
 			attrs = append(attrs, fmt.Sprintf(`type="%s"`, e.Type))
+
+			if e.Type == "depends_on" {
+				attrs = append(attrs, `color="red"`)
+				attrs = append(attrs, fmt.Sprintf(`penwidth="%f"`, 1+e.Weight*5))
+			}
 		}
 		if e.Weight != 0 {
-			attrs = append(attrs, fmt.Sprintf(`weight="%f"`, e.Weight))
+			attrs = append(attrs, fmt.Sprintf(`weight="%f"`, e.Weight*100)) // scale weight for better visualization
 		}
 		for k, v := range e.Attrs {
 			attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
