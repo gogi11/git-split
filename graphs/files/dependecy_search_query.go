@@ -11,7 +11,7 @@ type DependencySearchQuery struct {
 }
 
 func GetFileDependenciesQuery(filesGraph *FilesGraph) []DependencySearchQuery {
-	allFiles := filesGraph.GetLeaves()
+	allFiles := filesGraph.GetNodesByType("file")
 	var dependencySearches []DependencySearchQuery
 	for _, file := range allFiles {
 		fileSearches := getPossibleFileRefs(file)

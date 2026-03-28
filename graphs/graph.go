@@ -116,7 +116,7 @@ func (g *Graph) RemoveEdge(edge *Edge) {
 }
 
 func (g *Graph) GetParent(node *Node, edgeType string) *Node {
-	for _, edge := range g.Outgoing[node.ID] {
+	for _, edge := range g.Incoming[node.ID] {
 		if edge.Type == edgeType {
 			return g.Nodes[edge.From]
 		}
@@ -125,7 +125,7 @@ func (g *Graph) GetParent(node *Node, edgeType string) *Node {
 }
 
 func (g *Graph) GetEdge(start, end *Node, edgeType string) *Edge {
-	for _, edge := range g.Incoming[start.ID] {
+	for _, edge := range g.Outgoing[start.ID] {
 		if edge.Type == edgeType {
 			if edge.To == end.ID {
 				return edge
@@ -159,6 +159,16 @@ func (g *Graph) GetLeaves() []*Node {
 	var leaves []*Node
 	for _, node := range g.Nodes {
 		if len(g.Outgoing[node.ID]) == 0 {
+			leaves = append(leaves, node)
+		}
+	}
+	return leaves
+}
+
+func (g *Graph) GetNodesByType(typ string) []*Node {
+	var leaves []*Node
+	for _, node := range g.Nodes {
+		if node.Type == typ {
 			leaves = append(leaves, node)
 		}
 	}

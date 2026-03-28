@@ -46,7 +46,7 @@ func NewFilesGraph(actions []string, paths [][]string) *FilesGraph {
 
 func (fileGraph *FilesGraph) AddDependencyEdges() {
 	query := GetFileDependenciesQuery(fileGraph)
-	for _, node := range fileGraph.GetLeaves() {
+	for _, node := range fileGraph.GetNodesByType("file") {
 		for _, search := range query {
 			if node.ID == search.Node.ID {
 				continue
@@ -73,9 +73,8 @@ func (fileGraph *FilesGraph) AddDependencyEdges() {
 		}
 	}
 
-	// all files (leaves) with same parent should have some depency weight between them, as they are likely to be related, even if no direct reference is found, so add a small weight to all leaves with same parent
-	for _, node := range fileGraph.GetLeaves() {
-		for _, sibling := range fileGraph.GetLeaves() {
+	for _, node := range fileGraph.GetNodesByType("file") {
+		for _, sibling := range fileGraph.GetNodesByType("file") {
 			if node.ID != sibling.ID && strings.HasPrefix(node.ID, strings.TrimSuffix(sibling.ID, sibling.ID[strings.LastIndex(sibling.ID, "/"):])) {
 				fileGraph.AddEdgeOrAccumulateWeight(node.ID, sibling.ID, "depends_on", "Sibling Dependency", 0.1)
 			}
