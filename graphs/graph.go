@@ -165,6 +165,28 @@ func (g *Graph) GetLeaves() []*Node {
 	return leaves
 }
 
+func (g *Graph) GetSubNodes(parent *Node, nodeTyp string) []*Node {
+	// do a DFS to find all nodes of type nodeTyp that are children of parent
+	var nodes []*Node
+	queue := []*Node{parent}
+	seenNodes := map[string]bool{}
+	for len(queue) > 0 {
+		node := queue[0]
+		queue = queue[1:]
+		if seenNodes[node.ID] {
+			continue
+		}
+		seenNodes[node.ID] = true
+		if node.Type == nodeTyp {
+			nodes = append(nodes, node)
+		}
+		for _, edge := range g.Outgoing[node.ID] {
+			queue = append(queue, g.Nodes[edge.To])
+		}
+	}
+	return nodes
+}
+
 func (g *Graph) GetNodesByType(typ string) []*Node {
 	var leaves []*Node
 	for _, node := range g.Nodes {

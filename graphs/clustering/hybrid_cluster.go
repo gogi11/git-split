@@ -18,7 +18,7 @@ func clusterByParent(g *graphs.Graph, maxFilesCount int) map[string][]*graphs.No
 		}
 		// climb up until directory is "big enough"
 		for parent != nil && parent.ID != "." {
-			children := g.Outgoing[parent.ID] // TODO: do a better check here for children
+			children := g.GetSubNodes(parent, "file")
 			// stop if this dir is large enough
 			if len(children) >= maxFilesCount {
 				break

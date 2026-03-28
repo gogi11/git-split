@@ -77,7 +77,17 @@ var graphCmd = &cobra.Command{
 		fileGraph.AddDependencyEdges()
 		graphviz.CreateGraphImage(fileGraph.Graph, verbose)
 
-		clustering.HybridCluster(fileGraph.Graph, 2.2, 5)
+		clusters := clustering.HybridCluster(fileGraph.Graph, 2.2, 14)
+
+		fmt.Println()
+		fmt.Println("===================================")
+		for i, cluster := range clusters {
+			fmt.Printf("Cluster %d:\n", i)
+			for _, node := range cluster {
+				fmt.Printf("\t%s\n", node.ID)
+			}
+		}
+		fmt.Println("===================================")
 	},
 }
 
